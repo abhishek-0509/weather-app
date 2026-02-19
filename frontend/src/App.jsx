@@ -22,6 +22,9 @@ ChartJS.register(
   Legend
 );
 
+// 🔥 IMPORTANT: Replace with your Render backend URL
+const API_BASE = "https://YOUR_RENDER_BACKEND_URL";
+
 function App() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
@@ -30,7 +33,7 @@ function App() {
   const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
 
-  // Load history
+  // Load search history from localStorage
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("weatherHistory")) || [];
     setHistory(saved);
@@ -58,13 +61,13 @@ function App() {
     try {
       // Current Weather
       const response = await axios.get(
-        `http://localhost:8080/api/weather?city=${cityToSearch}`
+        `${API_BASE}/api/weather?city=${cityToSearch}`
       );
       setWeather(response.data);
 
       // 5-Day Forecast
       const forecastResponse = await axios.get(
-        `http://localhost:8080/api/weather/forecast?city=${cityToSearch}`
+        `${API_BASE}/api/weather/forecast?city=${cityToSearch}`
       );
 
       const dailyData = forecastResponse.data.list.filter((item) =>
@@ -73,7 +76,6 @@ function App() {
 
       setForecast(dailyData);
       saveToHistory(cityToSearch);
-
     } catch {
       setError("City not found or server error.");
     } finally {
@@ -98,12 +100,12 @@ function App() {
 
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/weather?lat=${latitude}&lon=${longitude}`
+            `${API_BASE}/api/weather?lat=${latitude}&lon=${longitude}`
           );
           setWeather(response.data);
 
           const forecastResponse = await axios.get(
-            `http://localhost:8080/api/weather/forecast?city=${response.data.name}`
+            `${API_BASE}/api/weather/forecast?city=${response.data.name}`
           );
 
           const dailyData = forecastResponse.data.list.filter((item) =>
@@ -111,7 +113,6 @@ function App() {
           );
 
           setForecast(dailyData);
-
         } catch {
           setError("Unable to fetch location weather.");
         } finally {
