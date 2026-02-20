@@ -1,60 +1,34 @@
 package com.example.weather.service;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class WeatherService {
 
-    @Value("${weather.api.key}")
-    private String apiKey;
+    private final String API_KEY = "aa291f3c8fb8b1de6da0f56f03be686f";
+    private final String BASE_URL = "https://api.openweathermap.org/data/2.5/";
 
-    private final WebClient webClient;
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    public WeatherService() {
-        this.webClient = WebClient.builder()
-                .baseUrl("https://api.openweathermap.org/data/2.5")
-                .build();
+    public ResponseEntity<String> getWeatherByCity(String city) {
+        String url = BASE_URL + "weather?q=" + city + "&appid=" + API_KEY + "&units=metric";
+        return ResponseEntity.ok(restTemplate.getForObject(url, String.class));
     }
 
-    public String getWeatherByCity(String city) {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/weather")
-                        .queryParam("q", city)
-                        .queryParam("appid", apiKey)
-                        .queryParam("units", "metric")
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+    public ResponseEntity<String> getForecastByCity(String city) {
+        String url = BASE_URL + "forecast?q=" + city + "&appid=" + API_KEY + "&units=metric";
+        return ResponseEntity.ok(restTemplate.getForObject(url, String.class));
     }
 
-    public String getWeatherByCoordinates(String lat, String lon) {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/weather")
-                        .queryParam("lat", lat)
-                        .queryParam("lon", lon)
-                        .queryParam("appid", apiKey)
-                        .queryParam("units", "metric")
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+    public ResponseEntity<String> getWeatherByCoordinates(double lat, double lon) {
+        String url = BASE_URL + "weather?lat=" + lat + "&lon=" + lon + "&appid=" + API_KEY + "&units=metric";
+        return ResponseEntity.ok(restTemplate.getForObject(url, String.class));
     }
 
-    public String getFiveDayForecast(String city) {
-    return webClient.get()
-            .uri(uriBuilder -> uriBuilder
-                    .path("/forecast")
-                    .queryParam("q", city)
-                    .queryParam("appid", apiKey)
-                    .queryParam("units", "metric")
-                    .build())
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
+    public ResponseEntity<String> getForecastByCoordinates(double lat, double lon) {
+        String url = BASE_URL + "forecast?lat=" + lat + "&lon=" + lon + "&appid=" + API_KEY + "&units=metric";
+        return ResponseEntity.ok(restTemplate.getForObject(url, String.class));
     }
 }
