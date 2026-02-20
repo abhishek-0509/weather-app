@@ -7,7 +7,7 @@ The application provides real-time weather data and a 5-day forecast using the O
 
 ## 🚀 Live Demo
 
-🌐 Frontend: weather-app-alpha-five-ia7gfz49gp.vercel.app 
+🌐 Frontend: https://weather-app-alpha-five-ia7gfz49gp.vercel.app/ 
 🔗 Backend API: https://weather-backend-sma3.onrender.com  
 
 ---
