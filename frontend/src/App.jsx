@@ -23,7 +23,7 @@ ChartJS.register(
 );
 
 // 🔥 IMPORTANT: Replace with your Render backend URL
-const API_BASE = "https://YOUR_RENDER_BACKEND_URL";
+const API_BASE = "https://weather-backend-sma3.onrender.com";
 
 function App() {
   const [city, setCity] = useState("");
