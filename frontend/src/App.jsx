@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://weather-backend-sma3.onrender.com"; // your Render backend URL
+const API_BASE = "https://weather-backend-sma3.onrender.com"; // your backend URL
 
 function App() {
   const [city, setCity] = useState("");
@@ -10,27 +10,26 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const getWeather = async (searchCity) => {
-    const cityToSearch = searchCity || city;
-    if (!cityToSearch) return;
+  const getWeatherByCity = async (cityName) => {
+    if (!cityName) return;
 
     setLoading(true);
     setError("");
 
     try {
-      const weatherResponse = await axios.get(
-        `${API_BASE}/api/weather?city=${cityToSearch}`
+      const weatherRes = await axios.get(
+        `${API_BASE}/api/weather?city=${cityName}`
       );
 
-      const forecastResponse = await axios.get(
-        `${API_BASE}/api/weather/forecast?city=${cityToSearch}`
+      const forecastRes = await axios.get(
+        `${API_BASE}/api/weather/forecast?city=${cityName}`
       );
 
-      const dailyData = forecastResponse.data.list.filter((item) =>
+      const dailyData = forecastRes.data.list.filter((item) =>
         item.dt_txt.includes("12:00:00")
       );
 
-      setWeather(weatherResponse.data);
+      setWeather(weatherRes.data);
       setForecast(dailyData);
     } catch (err) {
       setError("City not found or server error.");
@@ -39,6 +38,57 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = () => {
+    getWeatherByCity(city);
+  };
+
+  const handleEnter = (e) => {
+    if (e.key === "Enter") {
+      getWeatherByCity(city);
+    }
+  };
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation not supported.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+
+          const weatherRes = await axios.get(
+            `${API_BASE}/api/weather/coordinates?lat=${latitude}&lon=${longitude}`
+          );
+
+          const forecastRes = await axios.get(
+            `${API_BASE}/api/weather/forecast/coordinates?lat=${latitude}&lon=${longitude}`
+          );
+
+          const dailyData = forecastRes.data.list.filter((item) =>
+            item.dt_txt.includes("12:00:00")
+          );
+
+          setWeather(weatherRes.data);
+          setForecast(dailyData);
+        } catch (err) {
+          setError("Unable to fetch location weather.");
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => {
+        setError("Location permission denied.");
+        setLoading(false);
+      }
+    );
   };
 
   return (
@@ -50,20 +100,31 @@ function App() {
         </h1>
 
         {/* Search Section */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 w-full mb-4">
           <input
             type="text"
             placeholder="Enter city"
             value={city}
             onChange={(e) => setCity(e.target.value)}
+            onKeyDown={handleEnter}
             className="flex-1 px-4 py-3 rounded-xl text-black outline-none"
           />
 
           <button
-            onClick={() => getWeather()}
-            className="px-6 py-3 bg-red-500 hover:bg-red-600 rounded-xl font-semibold transition-all duration-300"
+            onClick={handleSearch}
+            className="px-6 py-3 bg-red-500 hover:bg-red-600 rounded-xl font-semibold transition"
           >
             Search
+          </button>
+        </div>
+
+        {/* Use Location Button */}
+        <div className="text-center mb-6">
+          <button
+            onClick={useMyLocation}
+            className="px-6 py-2 bg-green-500 hover:bg-green-600 rounded-xl font-semibold transition"
+          >
+            Use My Location
           </button>
         </div>
 
@@ -102,7 +163,7 @@ function App() {
           </div>
         )}
 
-        {/* 5-Day Forecast */}
+        {/* Forecast */}
         {forecast.length > 0 && !loading && (
           <div>
             <h3 className="text-xl font-bold mb-4 text-center">
