@@ -50,38 +50,36 @@ function App() {
   };
 
   const getWeather = async (searchCity) => {
-    const cityToSearch = searchCity || city;
-    if (!cityToSearch) return;
+  const cityToSearch = searchCity || city;
+  if (!cityToSearch) return;
 
-    setLoading(true);
-    setError("");
-    setWeather(null);
-    setForecast([]);
+  setLoading(true);
+  setError("");
 
-    try {
-      // Current Weather
-      const response = await axios.get(
-        `${API_BASE}/api/weather?city=${cityToSearch}`
-      );
-      setWeather(response.data);
+  try {
+    const weatherResponse = await axios.get(
+      `${API_BASE}/api/weather?city=${cityToSearch}`
+    );
 
-      // 5-Day Forecast
-      const forecastResponse = await axios.get(
-        `${API_BASE}/api/weather/forecast?city=${cityToSearch}`
-      );
+    const forecastResponse = await axios.get(
+      `${API_BASE}/api/weather/forecast?city=${cityToSearch}`
+    );
 
-      const dailyData = forecastResponse.data.list.filter((item) =>
-        item.dt_txt.includes("12:00:00")
-      );
+    const dailyData = forecastResponse.data.list.filter((item) =>
+      item.dt_txt.includes("12:00:00")
+    );
 
-      setForecast(dailyData);
-      saveToHistory(cityToSearch);
-    } catch {
-      setError("City not found or server error.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setWeather(weatherResponse.data);
+    setForecast(dailyData);
+
+  } catch (err) {
+    console.error(err);
+    setError("City not found or server error.");
+  } finally {
+    setLoading(false); // 🔥 VERY IMPORTANT
+  }
+};
+
 
   const detectLocation = () => {
     if (!navigator.geolocation) {
